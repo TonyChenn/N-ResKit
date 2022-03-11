@@ -1,0 +1,16 @@
+{
+    "name": "N-ResKit",
+    "rootNamespace": "",
+    "references": [
+        "N-Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
