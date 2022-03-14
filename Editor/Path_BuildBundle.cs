@@ -31,7 +31,7 @@ namespace ResKit.Editor
         [SettingMethod("打包配置信息: ", "打开配置文件")]
         public static void OpenCfgFile()
         {
-            string path = Application.dataPath + "/Modules/N-AssetBundle/Editor/BuildConfig.cs";
+            string path = Application.dataPath + "/Modules/N-ResKit/Editor/BuildConfig.cs";
             UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(path, 1);
         }
 
