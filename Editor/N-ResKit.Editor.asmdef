@@ -2,11 +2,11 @@
     "name": "N-ResKit.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:f55c1a8f394d4d84d9807689bd76b638",
-        "GUID:469ae41c422dc934eabad90a1ca81cda",
-        "GUID:08253c93f07cbdc4fa57c9519da2fc26",
-        "GUID:fa104f6cb53a49e98671682175ed8174",
-        "GUID:74744fa3a5604ead8861d44d80a8d748"
+        "N-Core",
+        "N-ResKit",
+        "N-Core.Editor",
+        "N-ConvertTable.Editor",
+        "N-Package"
     ],
     "includePlatforms": [
         "Editor"
