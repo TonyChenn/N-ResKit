@@ -1,43 +1,44 @@
-﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace ResKit
 {
     public class BundleRes : ResBase
     {
-        private string mAssetPath;
-
-        public AssetBundle Bundle
-        {
-            get { return Asset as AssetBundle; }
-            protected set { Asset = value; }
-        }
+        private string m_bundlePath;
 
         public BundleRes(string bundleName)
         {
             Name = bundleName;
-            mAssetPath = BundlePathUtil.GetAssetBundlePath(bundleName);
+            m_bundlePath = PathUtil.GetAssetBundlePath(bundleName);
             State = ResState.Loading;
         }
 
-        #region override
-
-        public override bool LoadSync()
+        public AssetBundle Bundle
         {
-            State = ResState.Loading;
-            Bundle = AssetBundle.LoadFromFile(mAssetPath);
-            State = ResState.LoadSuccess;
-            return Bundle;
+            get { return Asset as AssetBundle; }
+            set { Asset = value; }
         }
 
         public override void LoadAsync()
         {
             State = ResState.Loading;
-            var request = AssetBundle.LoadFromFileAsync(mAssetPath);
-            request.completed += (operation) =>
+            var req = AssetBundle.LoadFromFileAsync(m_bundlePath);
+            req.completed += (operation) =>
             {
-                Asset = request.assetBundle;
+                Asset = req.assetBundle;
                 State = ResState.LoadSuccess;
             };
+        }
+
+        public override bool LoadSync()
+        {
+            State = ResState.Loading;
+            Asset = AssetBundle.LoadFromFile(m_bundlePath);
+            State = ResState.LoadSuccess;
+
+            return Asset;
         }
 
         protected override void OnReleaseRes()
@@ -48,7 +49,6 @@ namespace ResKit
                 Bundle = null;
             }
         }
-
-        #endregion
     }
 }
+

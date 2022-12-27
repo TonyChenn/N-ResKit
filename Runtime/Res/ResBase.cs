@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using UnityEngine.Profiling;
 using UObject = UnityEngine.Object;
 
 namespace ResKit
@@ -22,22 +23,22 @@ namespace ResKit
 
     public abstract class ResBase : SimpleRC
     {
-        private Action<ResBase> mOnLoadedEvent;
-        private ResState mLoadState;
-        private string mAssetPath;
+        private Action<ResBase> m_onLoadedEvent;
+        private ResState m_loadState;
+        private string m_assetPath;
 
         public UObject Asset { get; protected set; }
         public string Name { get; protected set; }
 
         public ResState State
         {
-            get { return mLoadState; }
+            get { return m_loadState; }
             set
             {
-                mLoadState = value;
-                if (mLoadState == ResState.LoadSuccess)
+                m_loadState = value;
+                if (m_loadState == ResState.LoadSuccess)
                 {
-                    mOnLoadedEvent?.Invoke(this);
+                    m_onLoadedEvent?.Invoke(this);
                 }
             }
         }
@@ -45,12 +46,12 @@ namespace ResKit
         public void AddOnLoadedEvent(Action<ResBase> onLoaded)
         {
             if (onLoaded != null)
-                mOnLoadedEvent += onLoaded;
+                m_onLoadedEvent += onLoaded;
         }
 
         public void RemoveOnLoadedEvent(Action<ResBase> onLoaded)
         {
-            mOnLoadedEvent -= onLoaded;
+            m_onLoadedEvent -= onLoaded;
         }
 
         #region abstract
@@ -58,6 +59,6 @@ namespace ResKit
         public abstract bool LoadSync();
         public abstract void LoadAsync();
         #endregion
-        
+
     }
 }
