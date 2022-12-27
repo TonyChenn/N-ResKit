@@ -6,6 +6,7 @@
         "N-ResKit",
         "N-Core.Editor",
         "N-ConvertTable.Editor",
+        "HybridCLR.Editor",
         "N-Package"
     ],
     "includePlatforms": [
