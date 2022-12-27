@@ -26,8 +26,29 @@ public class BuildWindow : EditorWindow
         pos = GUILayout.BeginScrollView(pos);
         // 配置目录
         GUILayout.Label("配置信息：", titleStyle);
+
         GUILayout.BeginHorizontal();
-        GUILayout.Label("AB包库：", GUILayout.Width(150));
+        GUILayout.Label("表格目录：", GUILayout.Width(150));
+        Args.ExcelFolder = GUILayout.TextField(Path_TableConfig.ExcelFolder);
+        if (GUILayout.Button("设置", GUILayout.Width(50)))
+        {
+            PackageWnd.ShowWnd(SettingPage.TAG, "导表配置");
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("打包平台：", GUILayout.Width(150));
+        Args.CurBuildTarget = (BuildTarget)EditorGUILayout.EnumPopup(Args.CurBuildTarget);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("压缩格式：", GUILayout.Width(150));
+        Path_BuildBundle.BundleCompression = (BuildAssetBundleOptions)EditorGUILayout.EnumPopup(Path_BuildBundle.BundleCompression);
+        GUILayout.EndHorizontal();
+        GUILayout.Space(20);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("输出目录：", GUILayout.Width(150));
         Path_BuildBundle.SelectedBuildPlaceIndex = GUILayout.SelectionGrid(Path_BuildBundle.SelectedBuildPlaceIndex, buildBundlePlaceArray, buildBundlePlaceArray.Length);
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -46,23 +67,6 @@ public class BuildWindow : EditorWindow
         }
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
-
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("表格目录：", GUILayout.Width(150));
-        Args.ExcelFolder = GUILayout.TextField(Path_TableConfig.ExcelFolder);
-        if (GUILayout.Button("设置", GUILayout.Width(50)))
-        {
-            PackageWnd.ShowWnd(SettingPage.TAG, "导表配置");
-        }
-        GUILayout.EndHorizontal();
-        GUILayout.Space(10);
-
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("打包平台：", GUILayout.Width(150));
-        Args.CurBuildTarget = (BuildTarget)EditorGUILayout.EnumPopup(Args.CurBuildTarget);
-        GUILayout.EndHorizontal();
-        GUILayout.Space(30);
-
 
 
         GUILayout.Label("打包参数：", titleStyle);

@@ -1,6 +1,4 @@
-using HybridCLR.Editor;
-using NCore;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
+ï»¿using NCore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +6,6 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using static UnityEngine.Networking.UnityWebRequest;
 
 public class BuildAB
 {
@@ -30,8 +27,9 @@ public class BuildAB
         }
     }
 
-    private static string TmpHashFile { get { return $"{TmpFolder}/main.csv"; } }
-    private static string HashFile { get { return $"{BuildRootFolder}/main.csv"; } }
+    private static string HashFile => $"{BuildRootFolder}/main.csv";
+
+    private static string VersionFile => $"{BuildRootFolder}/version.dat";
 
     public static IEnumerator Build(string targetFolder, bool rebuildAll)
     {
@@ -40,11 +38,11 @@ public class BuildAB
         List<AssetCategory> categories = BuildingConfig.GetConfig();
         if (categories == null || categories.Count == 0)
         {
-            EditorUtility.DisplayDialog("´íÎó", "Ã»ÓĞÒª´ò°üµÄÅäÖÃĞÅÏ¢", "ºÃµÄ");
+            EditorUtility.DisplayDialog("é”™è¯¯", "æ²¡æœ‰è¦æ‰“åŒ…çš„é…ç½®ä¿¡æ¯", "å¥½çš„");
             yield break;
         }
 
-        // ¶ÁÈ¡ÉÏ´Î´ò°üÅäÖÃĞÅÏ¢
+        // è¯»å–ä¸Šæ¬¡æ‰“åŒ…é…ç½®ä¿¡æ¯
         string[] lash_build_config = null;
         if (File.Exists(HashFile))
         {
@@ -69,22 +67,22 @@ public class BuildAB
         }
         else
         {
-            yield return "ÕâÊÇµÚÒ»´Î´ò°ü¡£";
+            yield return "è¿™æ˜¯ç¬¬ä¸€æ¬¡æ‰“åŒ…ã€‚";
         }
-        // ¼ÆËãHashÖ®Ç°
+        // è®¡ç®—Hashä¹‹å‰
         categories.ForEach((asset) => { asset.OnBeforeComputeHash(); });
 
-        // ¼ÆËãHash
-        yield return "ÕıÔÚ¼ÆËã×ÊÔ´µÄ¹şÏ£Öµ...";
+        // è®¡ç®—Hash
+        yield return "æ­£åœ¨è®¡ç®—èµ„æºçš„å“ˆå¸Œå€¼...";
         categories.ForEach((asset) => { asset.ComputeHash(); });
 
-        // ºÍÉÏ´Î´ò°ü¶Ô±È£¬ÊÇ·ñÓĞ×ÊÔ´±ä»¯
+        // å’Œä¸Šæ¬¡æ‰“åŒ…å¯¹æ¯”ï¼Œæ˜¯å¦æœ‰èµ„æºå˜åŒ–
         bool needBuild = false;
         categories.ForEach((asset) => { if (asset.HasChangedItem) { needBuild = true;} });
 
-        // ¼ÆËãĞèÒªÉ¾³ıµÄ×ÊÔ´
+        // è®¡ç®—éœ€è¦åˆ é™¤çš„èµ„æº
         List<string> removedList;
-        // Ë¢ĞÂ´ò°ü±ê¼Ç
+        // åˆ·æ–°æ‰“åŒ…æ ‡è®°
         foreach (var c in categories)
         {
             foreach (var item in c.Bundles)
@@ -94,49 +92,49 @@ public class BuildAB
                 else item.BuildingFlag |= BaseBundle.Flag.Modified;
             }
         }
-        // TODO ±ê¼ÇĞèÒªÒÆ³ıµÄ×ÊÔ´
+        // TODO æ ‡è®°éœ€è¦ç§»é™¤çš„èµ„æº
 
 
         if (needBuild)
         {
-            // ´ò°üµ½ÁÙÊ±Ä¿Â¼
-            yield return "ÕıÔÚ´ò°ü...";
+            // æ‰“åŒ…åˆ°ä¸´æ—¶ç›®å½•
+            yield return "æ­£åœ¨æ‰“åŒ…...";
             buildHandler(TmpFolder, categories);
 
-            // ¼ì²éÓĞÃ»ÓĞ´ò°ü»µ×ÊÔ´
+            // æ£€æŸ¥æœ‰æ²¡æœ‰æ‰“åŒ…åèµ„æº
             bool sucess = allBuildSuccess(categories);
-            if (!sucess) throw new InvalidOperationException("´ò°üÊ§°Ü£¬Î´ÖªÔ­Òò");
+            if (!sucess) throw new InvalidOperationException("æ‰“åŒ…å¤±è´¥ï¼ŒæœªçŸ¥åŸå› ");
 
-            // ÒÆ¶¯µ½ÕıÊ½Ä¿Â¼
+            // ç§»åŠ¨åˆ°æ­£å¼ç›®å½•
             CopyBundles(TmpFolder, BuildRootFolder);
-            yield return "´ò°üÍê³É";
+            yield return "æ‰“åŒ…å®Œæˆ";
 
-            // ´ò°üÍê³ÉÊÂ¼ş
+            // æ‰“åŒ…å®Œæˆäº‹ä»¶
             categories.ForEach((asset) => { asset.OnBuildFinished(); });
         }
-        // ´ò°ü½áÊøÊÂ¼ş
+        // æ‰“åŒ…ç»“æŸäº‹ä»¶
         categories.ForEach((asset) => { asset.OnAllBuildCompleted(); });
 
-        //TODO Éú³É°æ¿Ø
-        yield return "Éú³É°æ¿ØÎÄ¼ş...";
+        //ç”Ÿæˆç‰ˆæ§
+        yield return "ç”Ÿæˆç‰ˆæ§æ–‡ä»¶...";
+        createVersionFile();
 
-        // Éú³ÉÈÈ¸üÎÄ¼ş
+        // ç”Ÿæˆçƒ­æ›´æ–‡ä»¶
         int changedSize = createHashFile(categories);
         int kb = changedSize / 1024;
         int mb = kb / 1024;
         kb = changedSize % 1024;
-        yield return $"ab°ü¸üĞÂ´óĞ¡±ä»¯£¬{mb}MB, {kb}KB";
+        yield return $"abåŒ…æ›´æ–°å¤§å°å˜åŒ–ï¼Œ{mb}MB, {kb}KB";
 
-        createVersionFile();
 
-        // TODO É¾³ıÒªÒÆ³ıµÄ×ÊÔ´
+        // TODO åˆ é™¤è¦ç§»é™¤çš„èµ„æº
 
         // dispose
         categories.ForEach((asset) => { asset.Dispose(); });
     }
 
     /// <summary>
-    /// ¸üĞÂ×ÊÔ´µÄ±êÖ¾
+    /// æ›´æ–°èµ„æºçš„æ ‡å¿—
     /// </summary>
     private static void updateBundleFlag(List<AssetCategory> categories, out List<string> removedList)
     {
@@ -163,13 +161,13 @@ public class BuildAB
         if (Directory.Exists(folder)) Directory.Delete(folder, true);
         Directory.CreateDirectory(folder);
 
-        // ×¼±¸´ò°ü
+        // å‡†å¤‡æ‰“åŒ…
         List<AssetBundleBuild> list = new List<AssetBundleBuild>(128);
         foreach (var item in categories)
         {
             if (item.HasChangedItem)
             {
-                // ÎŞĞè´ò°ü×ÊÔ´
+                // æ— éœ€æ‰“åŒ…èµ„æº
                 if (item is UnBuildAssets)
                 {
                     (item as UnBuildAssets).Build(folder);
@@ -185,7 +183,7 @@ public class BuildAB
         AssetDatabase.Refresh();
 
         // build
-        BuildPipeline.BuildAssetBundles(folder, list.ToArray(), BuildAssetBundleOptions.ChunkBasedCompression, EditorUserBuildSettings.activeBuildTarget);
+        BuildPipeline.BuildAssetBundles(folder, list.ToArray(), Path_BuildBundle.BundleCompression, EditorUserBuildSettings.activeBuildTarget);
 
         // del manifest
         string[] manifests = Directory.GetFiles(folder, "*.manifest", SearchOption.AllDirectories);
@@ -237,26 +235,26 @@ public class BuildAB
     }
 
 
-    // ´´½¨°æ¿ØÎÄ¼ş
+    // åˆ›å»ºç‰ˆæ§æ–‡ä»¶
     private static void createVersionFile()
     {
-        string versionFile = $"{TmpFolder}/version.dat";
-        if (!File.Exists(versionFile))
-            File.WriteAllText(versionFile, "{\"version\":\"0.0.0\",\"cdn_url\":\"www.baidu.com\", \"time\":0}");
+        if (!File.Exists(VersionFile))
+            File.WriteAllText(VersionFile, "{\"version\":\"0.0.0\",\"cdn_url\":\""+ Path_BuildBundle.CDNUrl + "\", \"time\":0}");
 
-        string json = File.ReadAllText(versionFile);
+        string json = File.ReadAllText(VersionFile);
         JSONNode node = JSON.Parse(json);
         string cur_version = node["version"];
         string[] strs = cur_version.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
         int version = int.Parse(strs[2]);
 
         node["version"] = $"{strs[0]}.{strs[1]}.{version + 1}";
+        node["cdn_url"] = Path_BuildBundle.CDNUrl;
         node["time"] = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
 
-        File.WriteAllText(versionFile, node.ToString());
+        File.WriteAllText(VersionFile, node.ToString());
     }
 
-    // Éú³É×ÊÔ´ÁĞ±í
+    // ç”Ÿæˆèµ„æºåˆ—è¡¨
     private static int createHashFile(List<AssetCategory> categories)
     {
         if (File.Exists(HashFile)) File.Create(HashFile).Dispose();
