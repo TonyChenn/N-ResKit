@@ -100,9 +100,9 @@ public static class MD5Helper
         string[] dependencies = AssetDatabase.GetDependencies(assetPaths);
         foreach (string dependency in dependencies)
         {
-            byte[] bufferOfD = ReadFileBytes(dependency);
-            if (bufferOfD != null)
-                list.AddRange(bufferOfD);
+            byte[] buffer = ReadFileBytes(dependency);
+            if (buffer != null)
+                list.AddRange(buffer);
         }
         return ComputeHash(list.ToArray());
     }
