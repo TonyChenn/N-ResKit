@@ -16,117 +16,27 @@ MonoBehaviour:
   - Name: Asset
     Path: 
     Type: 0
-  - Name: Config
-    Path: 
-    Type: 0
-  - Name: Table
-    Path: 
-    Type: 4
   - Name: DLL
     Path: 
     Type: 0
-  - Name: StandaloneWindows64
+  - Name: Material
     Path: 
-    Type: 4
+    Type: 0
   - Name: Scenes
     Path: 
-    Type: 4
+    Type: 0
   - Name: Shaders
+    Path: 
+    Type: 0
+  - Name: ShaderVariants
     Path: 
     Type: 0
   - Name: Sounds
     Path: 
-    Type: 4
+    Type: 0
   - Name: UI
     Path: 
     Type: 0
-  - Name: Atlas
-    Path: 
-    Type: 3
-  - Name: atlas_common
-    Path: 
-    Type: 2
-  - Name: atlas_start
-    Path: 
-    Type: 2
-  - Name: Font
-    Path: 
-    Type: 4
-  - Name: Image
-    Path: 
-    Type: 0
-  - Name: Prefabs
-    Path: 
-    Type: 3
-  - Name: ui_common
-    Path: 
-    Type: 2
-  - Name: ui_message
-    Path: 
-    Type: 2
-  - Name: ui_start
-    Path: 
-    Type: 2
   - Name: Videos
     Path: 
-    Type: 4
-  - Name: Android
-    Path: 
-    Type: 4
-  - Name: iOS
-    Path: 
-    Type: 4
-  - Name: Assembly-CSharp.dll.bytes
-    Path: 
-    Type: 1
-  - Name: HybridCLR.Runtime.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Main.dll.bytes
-    Path: 
-    Type: 1
-  - Name: mscorlib.dll.bytes
-    Path: 
-    Type: 1
-  - Name: N-Core.dll.bytes
-    Path: 
-    Type: 1
-  - Name: N-ResKit.dll.bytes
-    Path: 
-    Type: 1
-  - Name: N-SDK.dll.bytes
-    Path: 
-    Type: 1
-  - Name: System.Core.dll.bytes
-    Path: 
-    Type: 1
-  - Name: System.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Unity.2D.Common.Runtime.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Unity.2D.PixelPerfect.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Unity.2D.SpriteShape.Runtime.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Unity.InternalAPIEngineBridge.001.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Unity.Mathematics.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Unity.TextMeshPro.dll.bytes
-    Path: 
-    Type: 1
-  - Name: Unity.Timeline.dll.bytes
-    Path: 
-    Type: 1
-  - Name: UnityEngine.TestRunner.dll.bytes
-    Path: 
-    Type: 1
-  - Name: UnityEngine.UI.dll.bytes
-    Path: 
-    Type: 1
+    Type: 0

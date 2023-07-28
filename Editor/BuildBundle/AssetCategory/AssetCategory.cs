@@ -22,22 +22,6 @@ public abstract class AssetCategory
         set { m_outputFolder = value.TrimStart('/').TrimEnd('/').ToLower(); }
     }
 
-    public bool HasChangedItem
-    {
-        get
-        {
-            if (Bundles != null)
-            {
-                foreach (var item in Bundles)
-                {
-                    if (item.LastHash != item.CurrentHash)
-                        return true;
-                }
-            }
-            return false;
-        }
-    }
-
     public BaseBundle[] Bundles
     {
         get
@@ -62,14 +46,11 @@ public abstract class AssetCategory
             List<AssetBundleBuild> items = new List<AssetBundleBuild>();
             foreach (var item in Bundles)
             {
-                if (item.NeedBuild)
+                items.Add(new AssetBundleBuild()
                 {
-                    items.Add(new AssetBundleBuild()
-                    {
-                        assetBundleName = item.AssetBundleName,
-                        assetNames = item.AssetNames,
-                    });
-                }
+                    assetBundleName = item.AssetBundleName,
+                    assetNames = item.AssetNames,
+                });
             }
             return items;
         }
@@ -95,14 +76,6 @@ public abstract class AssetCategory
 
     public virtual void OnBeforeComputeHash() { }
 
-    public virtual void ComputeHash()
-    {
-        for (int i = 0, iMax = Bundles.Length; i < iMax; i++)
-        {
-            Bundles[i].ComputeHashIfNeed();
-        }
-    }
-
     public virtual void OnAllBuildCompleted() { }
 
     public virtual void Dispose()
@@ -117,7 +90,7 @@ public abstract class AssetCategory
     #region static
 
     /// <summary>
-    /// 获取原始文件
+    /// 鑾峰彇鍘熷鏂囦欢
     /// </summary>
     public static string[] GetAssets(string folder, string filter)
     {
@@ -143,7 +116,7 @@ public abstract class AssetCategory
                 assets[i] = BuildBundleUtil.GetRelativePath(files[i]);
             return assets;
         }
-        throw new ArgumentException("未知资源匹配模式");
+        throw new ArgumentException("鏈煡璧勬簮鍖归厤妯″紡");
     }
     #endregion
 }

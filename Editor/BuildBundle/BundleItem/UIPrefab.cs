@@ -1,9 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.UI;
 
 public class UIPrefab : BaseBundle
 {
@@ -25,44 +20,38 @@ public class UIPrefab : BaseBundle
     {
         get
         {
-            if(!NeedBuild) return null;
             if(m_AssetPaths.Length== 0) return null;
 
-            string[] result = new string[m_AssetPaths.Length];
-            for (int i = 0; i < m_AssetPaths.Length; i++)
-            {
-                string path = m_AssetPaths[i];
-                result[i] = path.Replace(m_SrcFolder, UIPrefabs.TempFolder);
-            }
-            return result;
+            //string[] result = new string[m_AssetPaths.Length];
+            //for (int i = 0; i < m_AssetPaths.Length; i++)
+            //{
+            //    string path = m_AssetPaths[i];
+            //    result[i] = path.Replace(m_SrcFolder, UIPrefabs.TempFolder);
+            //}
+            return m_AssetPaths;
         }
-    }
-
-    protected override string ComputeHash()
-    {
-        return MD5Helper.ComputeHashWithDependencies(m_AssetPaths);
     }
 
     public void PrepareBuild()
     {
         if(m_AssetPaths.Length == 0 ) return;
 
-        for (int i = 0,iMax = m_AssetPaths.Length; i < iMax; i++)
-        {
-            var path = m_AssetPaths[i];
-            var obj = AssetDatabase.LoadMainAssetAtPath(path) as GameObject;
-            // ÁÙÊ±¸´ÖÆ³öÀ´Ò»·Ý
-            var temp_path = path.Replace(m_SrcFolder, UIPrefabs.TempFolder);
-            if (!Directory.Exists(temp_path)) { Directory.CreateDirectory(temp_path); }
-            var temp_obj = PrefabUtility.SaveAsPrefabAsset(obj, temp_path);
+        //for (int i = 0,iMax = m_AssetPaths.Length; i < iMax; i++)
+        //{
+        //    var path = m_AssetPaths[i];
+        //    var obj = AssetDatabase.LoadMainAssetAtPath(path) as GameObject;
+        //    // ä¸´æ—¶å¤åˆ¶å‡ºæ¥ä¸€ä»½
+        //    var temp_path = path.Replace(m_SrcFolder, UIPrefabs.TempFolder);
+        //    if (!Directory.Exists(temp_path)) { Directory.CreateDirectory(temp_path); }
+        //    var temp_obj = PrefabUtility.SaveAsPrefabAsset(obj, temp_path);
 
-            // È¥µôÍ¨ÓÃÍ¼¼¯
-            // È¥µôÍ¨ÓÃ×ÖÌå
-            Text[] texts = temp_obj.GetComponentsInChildren<Text>();
-            foreach (var item in texts)
-            {
+        //    // åŽ»æŽ‰é€šç”¨å›¾é›†
+        //    // åŽ»æŽ‰é€šç”¨å­—ä½“
+        //    Text[] texts = temp_obj.GetComponentsInChildren<Text>();
+        //    foreach (var item in texts)
+        //    {
 
-            }
-        }
+        //    }
+        //}
     }
 }

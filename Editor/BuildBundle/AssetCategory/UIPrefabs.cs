@@ -5,8 +5,7 @@ using UnityEngine;
 
 public class UIPrefabs : AssetCategory
 {
-    public const string TempFolder = "Assets/../temp_build/ui_prefabs";
-    public UIPrefabs(string srcFolder, string filter, string outputFolder) 
+    public UIPrefabs(string srcFolder, string outputFolder) 
         : base(srcFolder, "t:Prefab", outputFolder)
     {
     }

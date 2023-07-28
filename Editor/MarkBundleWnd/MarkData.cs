@@ -90,4 +90,5 @@ public enum MarkType
     Folder,         // 整个文件夹打包
     SubFolder,      // 每个子文件夹单独打包
     SubFiles,       // 子文件单独打包
+    Raw,            // 原始文件
 }

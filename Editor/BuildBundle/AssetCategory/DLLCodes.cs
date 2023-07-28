@@ -4,13 +4,13 @@ using UObject = UnityEngine.Object;
 public class DLLCodes : AssetCategory
 {
     public DLLCodes(string srcFolder, string outputFolder) :
-        base(srcFolder, "f:*.dll.bytes", outputFolder)
+        base(srcFolder, "f:*.bytes", outputFolder)
     {
     }
 
     public override void OnBeforeComputeHash()
     {
-        BuildDll.CompileDll(EditorUserBuildSettings.activeBuildTarget);
+        BuildDll.CompileAndBuildDll();
     }
 
     public override BaseBundle[] GetAssetBundles()

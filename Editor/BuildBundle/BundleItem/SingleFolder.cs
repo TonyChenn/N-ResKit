@@ -13,9 +13,4 @@ public class SingleFolder : BaseBundle
 
     public override string Name => m_name;
     public override string[] AssetNames => m_assetPaths;
-
-    protected override string ComputeHash()
-    {
-        return MD5Helper.ComputeHashWithDependencies(m_assetPaths);
-    }
 }

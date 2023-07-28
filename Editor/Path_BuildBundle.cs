@@ -32,7 +32,7 @@ public class Path_BuildBundle : IPathConfig, IEditorPrefs
         set { EditorPrefsHelper.SetEnum("Path_BuildBundle_CompressionOption", value); }
     }
 
-    [SettingProperty(FieldType.EditField,"CDN 地址")]
+    [SettingProperty(FieldType.EditField,"CDN 地址(暂时废弃)")]
     public static string CDNUrl
     {
         get { return EditorPrefsHelper.GetString("Path_BuildBundle_CDNUrl", default_bundle_cdn_url); }

@@ -1,16 +1,6 @@
 using NCore.Editor;
+using System;
 using UnityEditor;
-using UnityEngine;
-
-//public enum BuildTargetEnum
-//{
-//    StandaloneWindows = BuildTarget.StandaloneWindows,
-//    StandaloneWindows64 = BuildTarget.StandaloneWindows64,
-//    StandaloneOSX = BuildTarget.StandaloneLinux64,
-//    //StandaloneLinux64 = BuildTarget.StandaloneLinux64,
-//    Android = BuildTarget.Android,
-//    iOS = BuildTarget.iOS,
-//}
 
 public class BuildArguments : IEditorPrefs
 {
@@ -44,14 +34,15 @@ public class BuildArguments : IEditorPrefs
         set { EditorPrefsHelper.SetBool("BuildArguments_GenHybirdCLR", value, true); }
     }
 
-    /// <summary>
-    /// 打包工程
-    /// </summary>
-    public bool BuildProject
-    {
-        get { return EditorPrefsHelper.GetBool("BuildArguments_BuildProject", false, true); }
-        set { EditorPrefsHelper.SetBool("BuildArguments_BuildProject", value, true); }
-    }
+	/// <summary>
+	/// 将bundle名以MD5命名
+	/// </summary>
+	public bool MD5BundleName
+	{
+		get { return EditorPrefsHelper.GetBool("BuildArguments_MD5BundleName", false, true); }
+		set { EditorPrefsHelper.SetBool("BuildArguments_MD5BundleName", value, true); }
+	}
+
     /// <summary>
     /// 全部重新打包（否则为增量打包）
     /// </summary>
@@ -71,16 +62,7 @@ public class BuildArguments : IEditorPrefs
     }
 
     /// <summary>
-    /// 复制到StreammingAsset目录
-    /// </summary>
-    public bool CopyToSreeammingAsset
-    {
-        get { return EditorPrefsHelper.GetBool("BuildArguments_CopyToSreeammingAsset", false, true); }
-        set { EditorPrefsHelper.SetBool("BuildArguments_CopyToSreeammingAsset", value, true); }
-    }
-
-    /// <summary>
-    /// 打包UI
+    /// 打包UI及引用的Atlas/Texture/Font/等
     /// </summary>
     public bool BuildUI
     {
@@ -99,9 +81,9 @@ public class BuildArguments : IEditorPrefs
         EditorPrefsHelper.DeleteKey("BuildArguments_ConvertTable", true);
         EditorPrefsHelper.DeleteKey("BuildArguments_GenHybirdCLR", true);
         EditorPrefsHelper.DeleteKey("BuildArguments_BuildProject", true);
-        EditorPrefsHelper.DeleteKey("BuildArguments_BuildAll", true);
+		EditorPrefsHelper.DeleteKey("BuildArguments_MD5BundleName", true);
+		EditorPrefsHelper.DeleteKey("BuildArguments_BuildAll", true);
         EditorPrefsHelper.DeleteKey("BuildArguments_UploadToFTP", true);
-        EditorPrefsHelper.DeleteKey("BuildArguments_CopyToSreeammingAsset", true);
         EditorPrefsHelper.DeleteKey("BuildArguments_BuildUI", true);
     }
     #endregion

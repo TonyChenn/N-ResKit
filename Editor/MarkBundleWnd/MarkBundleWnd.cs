@@ -16,7 +16,7 @@ public class MarkBundleWnd : EditorWindow
     private GUIStyle PopupStyle { get { if (popupStyle == null) popupStyle = new GUIStyle(EditorStyles.popup); return popupStyle; } }
     private TreeNode RootTreeNode { get { if (rootTreeNode == null) rootTreeNode = new TreeNode("Root", true); return rootTreeNode; } }
     private DirectoryInfo RootDir { get { if (rootDir == null) rootDir = new DirectoryInfo(Path_BuildBundle.BundleRootFolder); return rootDir; } }
-    private TreeView TreeView { get { if (treeView == null) treeView = new MarkBundleTreeView(); return treeView; } }
+    private MarkBundleTreeView TreeView { get { if (treeView == null) treeView = new MarkBundleTreeView(); return treeView; } }
 
 
     private void OnEnable()

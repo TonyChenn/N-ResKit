@@ -7,7 +7,7 @@
         "N-Core.Editor",
         "N-ConvertTable.Editor",
         "HybridCLR.Editor",
-        "N-Package"
+        "N-Package.Editor"
     ],
     "includePlatforms": [
         "Editor"

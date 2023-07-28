@@ -30,11 +30,6 @@ public class SingleFile<T> : BaseBundle where T : UObject
         m_assetPath = assetPath.Replace("\\", "/").TrimEnd('/');
     }
 
-    protected override string ComputeHash()
-    {
-        return MD5Helper.ComputeHashWithDependencies(m_assetPath);
-    }
-
     public static string GetNameToSrcFolder(string assetPath, string srcFolder)
     {
         srcFolder = srcFolder.Replace("\\", "/").TrimEnd('/');
