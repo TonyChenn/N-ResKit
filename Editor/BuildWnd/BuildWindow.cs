@@ -39,7 +39,7 @@ public class BuildWindow : EditorWindow
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("表格目录：", GUILayout.Width(150));
-        Args.ExcelFolder = GUILayout.TextField(Path_TableConfig.ExcelFolder);
+        GUILayout.TextField(Path_TableConfig.ExcelFolder);
         if (GUILayout.Button("设置", GUILayout.Width(50)))
         {
             PackageWnd.ShowWnd(SettingPage.TAG, "导表配置");
@@ -80,21 +80,6 @@ public class BuildWindow : EditorWindow
 
 
         GUILayout.Label("打包参数：", titleStyle);
-
-        Args.BuildAll = GUILayout.Toggle(Args.BuildAll, "打包全部");
-        GUILayout.Space(5);
-        Args.BuildUI = GUILayout.Toggle(Args.BuildUI, "打包UI");
-        GUILayout.Space(5);
-        Args.ConvertTable = GUILayout.Toggle(Args.ConvertTable, "打包table和配置", GUILayout.Width(150));
-        GUILayout.Space(5);
-        Args.GenHybirdCLR = GUILayout.Toggle(Args.GenHybirdCLR, "打包HybirdCLR");
-        GUILayout.Space(5);
-        if (Args.BuildAll)
-        {
-            Args.BuildUI = false;
-            Args.ConvertTable = false;
-            Args.GenHybirdCLR = true;
-        }
 
 		EditorGUI.BeginDisabledGroup(true);
 		Args.MD5BundleName = GUILayout.Toggle(Path_BuildBundle.BuildBundleFolderPath != Application.streamingAssetsPath, "修改Bundle名为MD5");
@@ -155,57 +140,25 @@ public class BuildWindow : EditorWindow
         if (!Directory.Exists(Path_BuildBundle.BuildBundleFolderPath))
             Directory.CreateDirectory(Path_BuildBundle.BuildBundleFolderPath);
 
-        // 转换配置表
-        if (args.ConvertTable)
-        {
-            yield return ">>>>>>>>>>开始执行转换配置表操作..";
-            var builder = BuildAB.Build(BuildingConfig.GetBuildAssetConfig(), Path_BuildBundle.BuildBundleFolderPath);
-            while (builder.MoveNext())
-            {
-                yield return builder.Current;
-            }
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-        }
-
-        // 打包 UIPrefab/字体/图集/散图
-        if (Args.BuildUI)
-        {
-            var builder = BuildAB.Build(BuildingConfig.GetBuildUIConfig(), Path_BuildBundle.BuildBundleFolderPath);
-            while (builder.MoveNext())
-            {
-                yield return builder.Current;
-            }
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-        }
-
-        // 打包
-        if (Args.BuildAll)
-        {
-            var builder = BuildAB.Build(BuildingConfig.GetAllConfig(), Path_BuildBundle.BuildBundleFolderPath);
-            while (builder.MoveNext())
-            {
-                yield return builder.Current;
-            }
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-        }
+		// 打包
+		var builder = Task_BuildAB.Build(BuildingConfig.GetAllConfig(), Path_BuildBundle.BuildBundleFolderPath);
+		while (builder.MoveNext())
+		{
+			yield return builder.Current;
+		}
+		AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
 		// build dll
-		if (Args.GenHybirdCLR)
-		{
-			UnityEngine.Debug.Log("HybridCLR打包平台：" + Args.CurBuildTarget);
-			BuildDll.CompileAndBuildDll();
-			AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-		}
+		UnityEngine.Debug.Log("HybridCLR打包平台：" + Args.CurBuildTarget);
+		Task_CompileDLL.CompileAndCopyDll();
+		AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
 		// 生成版控文件/资源MD5文件
-		if (Args.BuildAll)
-        {
-            BuildAB.CreateHashFile();
-			AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-        }
+		Task_CreateVersionInfo.CreateHashFile();
+		AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
-        // TODO 上传资源到服务器
-        if (args.UploadToFTP)
+		// TODO 上传资源到服务器
+		if (args.UploadToFTP)
         {
             yield return ">>>>>>>>>>上传到服务器...";
         }
