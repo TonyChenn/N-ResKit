@@ -72,8 +72,6 @@ public abstract class AssetCategory
 
     public virtual void OnBuildFinished() { }
 
-    public virtual void OnBeforeComputeHash() { }
-
     public virtual void OnAllBuildCompleted() { }
 
     public virtual void Dispose()
@@ -109,19 +107,31 @@ public abstract class AssetCategory
         if (filter.StartsWith("f:"))
         {
             string _pattern = filter.Substring(2);
-			string path = $"{UnityEngine.Application.dataPath}/../{folder}";
+			string path = GetFullPath(folder);
             string[] files = Directory.GetFiles(path, _pattern, SearchOption.AllDirectories);
             string[] assets = new string[files.Length];
             for (int i = 0; i < assets.Length; i++)
 			{
-				
-                assets[i] = $"Assets/{files[i][(UnityEngine.Application.dataPath.Length + 1)..]}";
+				assets[i] = GetRelativePath(files[i]);
 			}
             return assets;
         }
         throw new ArgumentException("未知资源匹配模式");
     }
-    #endregion
+
+	/// <summary>
+	/// 相对路径转绝对路径
+	/// </summary>
+	private static string GetFullPath(string relative_path)
+	{
+		return UnityEngine.Application.dataPath + "/" + relative_path.Substring("Assets/".Length);
+	}
+
+	private static string GetRelativePath(string full_path)
+	{
+		return "Assets/" + full_path.Substring(UnityEngine.Application.dataPath.Length + 1);
+	}
+	#endregion
 }
 
 

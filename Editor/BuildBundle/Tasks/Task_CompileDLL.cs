@@ -8,11 +8,13 @@ using UnityEngine;
 
 public static class Task_CompileDLL
 {
+	private static readonly string HOTFIX_DLL_FOLDER = Application.dataPath + "/BuildBundle/Code";
+	private static readonly string AOT_DLL_FOLDER = Application.dataPath + "/Resources/AotDll";
 	/// <summary>
 	/// 编译dll ,出自HybridCLR.CompileDllHelper.CompileDll
 	/// </summary>
 	[MenuItem("HybridCLR/CompileAndCopyDll")]
-	public static void BuildDllBundle()
+	static void BuildDllBundle()
 	{
 		CompileAndCopyDll(false);
 	}
@@ -20,10 +22,10 @@ public static class Task_CompileDLL
 
 	public static void CompileAndCopyDll(bool copyAotDll = true)
 	{
-		BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
 		HybridCLR.Editor.Commands.CompileDllCommand.CompileDllActiveBuildTarget();
+		Log.GreenInfo($"编译DLL成功，平台：{EditorUserBuildSettings.activeBuildTarget}");
 
-		string desFolder = Application.dataPath + "/BuildBundle/Code/" + target;
+		string desFolder = HOTFIX_DLL_FOLDER;
 		if (Directory.Exists(desFolder)) Directory.Delete(desFolder, true);
 		Directory.CreateDirectory(desFolder);
 
@@ -32,6 +34,7 @@ public static class Task_CompileDLL
 		AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 		if (failList.Count > 0) return;
 		failList.Clear();
+		Log.GreenInfo($"Hotfix DLL拷贝成功，{desFolder}");
 
 		if (copyAotDll)
 		{
@@ -41,7 +44,7 @@ public static class Task_CompileDLL
 		}
 		if (failList.Count > 0) return;
 
-		Debug.LogFormat($"编译程序集成功");
+		Log.GreenInfo($"AOT DLL拷贝成功，{AOT_DLL_FOLDER}");
 	}
 
 	private static void CopyHotfixDll(string outputDir, ref List<string> failList)
@@ -67,7 +70,7 @@ public static class Task_CompileDLL
 	private static void CopyAOTDlls(ref List<string> failList)
 	{
 		string aotSrcDir = SettingsUtil.GetAssembliesPostIl2CppStripDir(EditorUserBuildSettings.activeBuildTarget);
-		string aotDesDir = Application.dataPath + "/Resources/AotDll";
+		string aotDesDir = AOT_DLL_FOLDER;
 		if (Directory.Exists(aotDesDir)) { Directory.Delete(aotDesDir, true); }
 		Directory.CreateDirectory(aotDesDir);
 
@@ -83,6 +86,5 @@ public static class Task_CompileDLL
 			string targetPath = $"{aotDesDir}/{dll}.bytes";
 			File.Copy(dllPath, targetPath, true);
 		}
-		Debug.Log("完成拷贝AOT程序集");
 	}
 }

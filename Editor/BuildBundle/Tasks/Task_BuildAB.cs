@@ -24,19 +24,16 @@ public class Task_BuildAB
 			yield break;
 		}
 
-		// 计算Hash之前
-		categories.ForEach((asset) => { asset.OnBeforeComputeHash(); });
+		// 打包前事件
+		categories.ForEach(asset => { asset.PrepareBuild(); });
 
+		// 开始打包
+		yield return "正在打包...";
+		buildHandler(BuildRootFolder, categories);
+		yield return "打包完成";
 
-		if (true)
-		{
-			yield return "正在打包...";
-			buildHandler(BuildRootFolder, categories);
-			yield return "打包完成";
-
-			// 打包完成事件
-			categories.ForEach((asset) => { asset.OnBuildFinished(); });
-		}
+		// 打包完成事件
+		categories.ForEach((asset) => { asset.OnBuildFinished(); });
 		// 打包结束事件
 		categories.ForEach((asset) => { asset.OnAllBuildCompleted(); });
 
@@ -63,7 +60,6 @@ public class Task_BuildAB
 			}
 			else
 			{
-				item.PrepareBuild();
 				list.AddRange(item.AssetBundleBuilds);
 			}
 		}

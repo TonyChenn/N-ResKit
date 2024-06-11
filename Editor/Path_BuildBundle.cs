@@ -1,4 +1,4 @@
-﻿using NCore.Editor;
+using NCore.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -32,28 +32,21 @@ public class Path_BuildBundle : IPathConfig, IEditorPrefs
         set { EditorPrefsHelper.SetEnum("Path_BuildBundle_CompressionOption", value); }
     }
 
-    [SettingProperty(FieldType.EditField,"CDN 地址(暂时废弃)")]
-    public static string CDNUrl
+    [SettingProperty(FieldType.EditField,"CDN 地址")]
+    public static string CDNUrl1
     {
-        get { return EditorPrefsHelper.GetString("Path_BuildBundle_CDNUrl", default_bundle_cdn_url); }
-        set { EditorPrefsHelper.SetString("Path_BuildBundle_CDNUrl", value); }
+        get { return EditorPrefsHelper.GetString("Path_BuildBundle_CDNUrl1", default_bundle_cdn_url); }
+        set { EditorPrefsHelper.SetString("Path_BuildBundle_CDNUrl1", value); }
     }
+	[SettingProperty(FieldType.EditField, "CDN 备用")]
+	public static string CDNUrl2
+	{
+		get { return EditorPrefsHelper.GetString("Path_BuildBundle_CDNUrl2", default_bundle_cdn_url); }
+		set { EditorPrefsHelper.SetString("Path_BuildBundle_CDNUrl2", value); }
+	}
 
-    [SettingProperty(FieldType.Toggle, "剔除通用字体")]
-    public static bool EnableRemoveCommonFont
-    {
-        get { return EditorPrefsHelper.GetBool("Path_BuildBundle_EnableRemoveCommonFont", false); }
-        set { EditorPrefsHelper.SetBool("Path_BuildBundle_EnableRemoveCommonFont", value); }
-    }
 
-    [SettingProperty(FieldType.Toggle, "剔除通用图集")]
-    public static bool EnableRemoveCommonAtlas
-    {
-        get { return EditorPrefsHelper.GetBool("Path_BuildBundle_EnableRemoveCommonAtlas", false); }
-        set { EditorPrefsHelper.SetBool("Path_BuildBundle_EnableRemoveCommonAtlas", value); }
-    }
-
-    [SettingMethod("", "打开打包工具")]
+	[SettingMethod("", "打开打包工具")]
     public static void OpenBuildBundleTool()
     {
         BuildWindow.ShowWindow();
@@ -74,8 +67,8 @@ public class Path_BuildBundle : IPathConfig, IEditorPrefs
     /// </summary>
     public static string BuildBundleFolderPath
     {
-        get { return EditorPrefsHelper.GetString("Path_BuildBundle_BuildBundleFolderPath", Application.streamingAssetsPath); }
-        set { EditorPrefsHelper.SetString("Path_BuildBundle_BuildBundleFolderPath", value); }
+        get { return EditorPrefsHelper.GetString("Path_BuildBundle_BuildBundleFolderPath", Application.streamingAssetsPath).Replace("\\", "/"); }
+        set { EditorPrefsHelper.SetString("Path_BuildBundle_BuildBundleFolderPath", value.Replace("\\", "/")); }
     }
 
     [MenuItem("Tools/Open../Bundle库")]
@@ -108,9 +101,8 @@ public class Path_BuildBundle : IPathConfig, IEditorPrefs
 
         EditorPrefsHelper.DeleteKey("Path_BuildBundle_SelectedBuildPlaceIndex");
         EditorPrefsHelper.DeleteKey("Path_BuildBundle_BuildBundleFolderPath");
-        EditorPrefsHelper.DeleteKey("Path_BuildBundle_CDNUrl");
-        EditorPrefsHelper.DeleteKey("Path_BuildBundle_EnableRemoveCommonFont");
-        EditorPrefsHelper.DeleteKey("Path_BuildBundle_EnableRemoveCommonAtlas");
-    }
+        EditorPrefsHelper.DeleteKey("Path_BuildBundle_CDNUrl1");
+		EditorPrefsHelper.DeleteKey("Path_BuildBundle_CDNUrl2");
+	}
     #endregion
 }

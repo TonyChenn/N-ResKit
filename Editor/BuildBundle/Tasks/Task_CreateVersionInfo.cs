@@ -1,98 +1,94 @@
+using NCore;
+using NDebug;
 using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using UnityEditor;
 
 /// <summary>
 /// 创建版本文件与资源清单文件
 /// </summary>
 public class Task_CreateVersionInfo
 {
-	private static readonly string BuildRootFolder = Path_BuildBundle.BuildBundleFolderPath;
-	private static readonly string VersionFile = $"{BuildRootFolder}/version.data";
+	private static string BuildRootFolder { get { return Path_BuildBundle.BuildBundleFolderPath; } }
+	private static string VersionFile { get { return $"{BuildRootFolder}/version.data"; } }
+	private static bool IsStreammingFolder { get { return Path_BuildBundle.SelectedBuildPlaceIndex == 0; } }
 
 	/// <summary>
 	/// 生成资源列表
 	/// </summary>
 	public static async void CreateHashFile()
 	{
-		bool streammingFolder = BuildRootFolder == Application.streamingAssetsPath;
-
 		StringBuilder builder = new(512);
 
-		CalcuteFolderBundle(new DirectoryInfo(BuildRootFolder), ref builder);
+		CalcuteFolderBundle(BuildRootFolder, ref builder);
 		await Task.Delay(1000);
 		byte[] data = Encoding.UTF8.GetBytes(builder.ToString());
 		string md5 = MD5Helper.ComputeHash(data);
-		string saveName = streammingFolder ? "res_manifest" : md5;
-		File.WriteAllText($"{BuildRootFolder}/{saveName}.csv", builder.ToString());
+		string saveName = IsStreammingFolder ? "res_manifest" : md5;
 
-		CreateVersionFile(md5, streammingFolder);
+		string savePath = $"{BuildRootFolder}/{saveName}.csv";
+		File.WriteAllText(savePath, builder.ToString());
+		Log.GreenInfo($"创建资源清单完毕：" + savePath);
+
+		CreateVersionFile(md5);
 	}
 
-	private static void CalcuteFolderBundle(DirectoryInfo directory, ref StringBuilder builder)
+	private static void CalcuteFolderBundle(string directory, ref StringBuilder builder)
 	{
-		foreach (var dic in directory.GetDirectories())
+		string[] files = Directory.GetFiles(directory, "*.u", SearchOption.AllDirectories);
+		for (int i = 0; i < files.Length; i++)
 		{
-			CalcuteFolderBundle(dic, ref builder);
-		}
-
-		foreach (FileInfo file in directory.GetFiles("*.u"))
-		{
-			byte[] buffer = File.ReadAllBytes(file.FullName);
+			byte[] buffer = File.ReadAllBytes(files[i]);
 			string hash = MD5Helper.ComputeHash(buffer);
-			string filePath = file.FullName;
-			filePath = filePath.Replace('\\', '/');
-			filePath = filePath.Replace(BuildRootFolder, "").TrimStart('/');
+
+			string filePath = files[i].Replace('\\', '/');
+			filePath = filePath.Replace(directory, "").TrimStart('/');
 			builder.AppendLine($"{filePath.ToLower()},{hash},{buffer.Length}");
 		}
 	}
 
 	// 创建版控文件
-	private static void CreateVersionFile(string md5, bool streammingFolder)
+	private static void CreateVersionFile(string md5)
 	{
-		Int32 smallVersion = 0;
-		Int32 bigVersion = 0;
-		string appleExamVersion = "1.0";
-		long time = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-
-
+		VersionInfo data;
 		if (File.Exists(VersionFile))
 		{
-			using FileStream fs = new(VersionFile, FileMode.Open);
-			BinaryReader br = new(fs);
-			smallVersion = br.ReadInt32();
-			bigVersion = br.ReadInt32();
-			appleExamVersion = br.ReadString();
+			data = VersionInfoHelper.DeSerialize(VersionFile);
 		}
-		++smallVersion;
+		else
+		{
+			data = new VersionInfo { smallVersion = 0, bigVersion = 0 };
+		}
+		++data.smallVersion;
+		data.md5 = md5;
+		data.time = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+		data.SerializeAndSave(VersionFile);
+		data.cdn1 = Path_BuildBundle.CDNUrl1;
+		data.cdn2 = Path_BuildBundle.CDNUrl2;
+		AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
-		using (BinaryWriter writer = new BinaryWriter(File.Open(VersionFile, FileMode.OpenOrCreate)))
+		Log.GreenInfo($"版本文件创建完毕：{data.bigVersion}.{data.smallVersion} | {"" + data.appleExamVersion} | {md5} | {data.time}");
+		if (!IsStreammingFolder)
 		{
-			writer.Write(smallVersion);
-			writer.Write(bigVersion);
-			writer.Write(appleExamVersion);
-			writer.Write(md5);
-			writer.Write(time);
-		}
-		if (!streammingFolder)
-		{
-			string tmp_version = $"{BuildRootFolder}/version_{bigVersion}_{smallVersion}.data";
+			string tmp_version = $"{BuildRootFolder}/version_{data.bigVersion}_{data.smallVersion}.data";
 			File.Copy(VersionFile, tmp_version, true);
-			ModifyBundleName(BuildRootFolder);
+			ModifyBundleName();
 		}
 	}
 
-	public static void ModifyBundleName(string folder)
+	public static void ModifyBundleName()
 	{
-		string[] files = Directory.GetFiles(folder, "*.u", SearchOption.AllDirectories);
+		string[] files = Directory.GetFiles(BuildRootFolder, "*.u", SearchOption.AllDirectories);
 
 		foreach (var path in files)
 		{
 			string md5 = MD5Helper.GetFileMD5(path);
-			string newFilePath = path.Replace(Path.GetFileNameWithoutExtension(path), md5);
+			string fileName = Path.GetFileName(path);
+			string newFilePath = path.Replace(fileName, md5) + ".u";
 			if (File.Exists(newFilePath)) { File.Delete(newFilePath); }
+			Log.Info(path + "\t" + newFilePath);
 			File.Move(path, newFilePath);
 		}
 	}

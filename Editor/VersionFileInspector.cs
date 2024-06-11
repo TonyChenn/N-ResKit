@@ -1,5 +1,4 @@
 using System.IO;
-using UnityEditor;
 using UnityEngine;
 
 /// < summary >
@@ -15,31 +14,45 @@ public class VersionFileInspector : ICustomDefaultAssetInspector
 
 	public void Draw(string path)
 	{
-		byte[] buffer = File.ReadAllBytes(path);
-		using (BinaryReader reader = new BinaryReader(new MemoryStream(buffer)))
+		VersionInfo info = VersionInfoHelper.DeSerialize(PathUtil.GetAbsolutePath(path));
+		if(info == null)
 		{
-			string small = reader.ReadInt32().ToString();
-			string big = reader.ReadInt32().ToString();
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("版本号: ", GUILayout.Width(90));
-			GUILayout.TextField($"{big}.{small}");
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("iOS提审版本号: ", GUILayout.Width(90));
-			GUILayout.TextField(reader.ReadString());
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("版本MD5: ", GUILayout.Width(90));
-			GUILayout.TextField(reader.ReadString());
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("时间: ", GUILayout.Width(90));
-			GUILayout.TextField(reader.ReadInt64().ToString());
-			GUILayout.EndHorizontal();
+			GUILayout.Label("版本文件已损坏！！");
+			return;
 		}
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("版本号: ", GUILayout.Width(90));
+		GUILayout.TextField($"{info.bigVersion}");
+		GUILayout.TextField($"{info.smallVersion}");
+		GUILayout.EndHorizontal();
+
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("iOS提审版本号: ", GUILayout.Width(90));
+		GUILayout.TextField(info.appleExamVersion);
+		GUILayout.EndHorizontal();
+
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("版本MD5: ", GUILayout.Width(90));
+		GUILayout.TextField(info.md5);
+		GUILayout.EndHorizontal();
+
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("CDN1: ", GUILayout.Width(90));
+		GUILayout.TextField(info.cdn1);
+		GUILayout.EndHorizontal();
+
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("CDN2: ", GUILayout.Width(90));
+		GUILayout.TextField(info.cdn2);
+		GUILayout.EndHorizontal();
+
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("时间: ", GUILayout.Width(90));
+		GUILayout.TextField(info.time.ToString());
+		GUILayout.EndHorizontal();
+
+		GUILayout.BeginHorizontal();
+		GUILayout.EndHorizontal();
 	}
 }
 

@@ -4,19 +4,6 @@ using UnityEditor;
 
 public class BuildArguments : IEditorPrefs
 {
-
-    public BuildTarget CurBuildTarget
-    {
-        get { return EditorUserBuildSettings.activeBuildTarget; }
-        set
-        {
-            if (value != EditorUserBuildSettings.activeBuildTarget)
-            {
-                EditorUtility.DisplayDialog("提示", "打包平台必须与激活平台保持一致", "好的");
-            }
-        }
-    }
-
 	/// <summary>
 	/// 将bundle名以MD5命名
 	/// </summary>

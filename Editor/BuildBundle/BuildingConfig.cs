@@ -20,7 +20,7 @@ public static class BuildingConfig
             new NormalAssets("Assets/BuildBundle/Asset/Table","f:*.asset","asset/table"),
 
 			// Code
-            new DLLCodes("Assets/BuildBundle/Code", "dll"),
+            new DLLCodes("Assets/BuildBundle/Code", "code"),
 
             // Scenes
             new NormalAssets("Assets/BuildBundle/Scenes","t:Scene","scenes"),
