@@ -6,7 +6,10 @@ public static class PathUtil
 {
 	private static string temp_str = string.Empty;
 
-	public static string GetBundleFullPath(string bundleName, bool isFolder = false)
+	/// <summary>
+	/// 如果Persistent中存在返回，不存在则返回Streamming中
+	/// </summary>
+	public static string GetBundlePath(string bundleName, bool isFolder = false)
 	{
 		if (GameConfig.PlayMode == PlayMode.OfflineMode)
 		{
@@ -59,9 +62,8 @@ public static class PathUtil
 		
 		return result;
 	}
-	#region 
 
-	private static string GetBundleStreammingPath(string path, bool isFolder = false)
+	public static string GetBundleStreammingPath(string path, bool isFolder = false)
 	{
 		var builder = StringBuilderPool.Alloc();
 		builder.Append(Application.streamingAssetsPath);
@@ -75,7 +77,16 @@ public static class PathUtil
 		builder.Recycle();
 		return temp_str;
 	}
-	#endregion
+
+	/// <summary>
+	/// 将以 "Assets/"开头的相对路径转换为绝对路径
+	/// </summary>
+	public static string GetAbsolutePath(string relativePath) => $"{Application.dataPath}/{relativePath[6..]}";
+
+	/// <summary>
+	/// 将绝对路径转换为以 "Assets/" 开头的相对路径
+	/// </summary>
+	public static string GetRelativePath(string absolutePath) => $"Assets{absolutePath[Application.dataPath.Length..]}";
 }
 
 

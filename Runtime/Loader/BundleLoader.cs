@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NCore;
+using UnityEngine;
 
-public class BundleLoader : ILoader
+public class BundleLoader
 {
 	private readonly Dictionary<string, BundleRes> loadingDict;
 	private readonly Dictionary<string, BundleRes> loadedDict;
@@ -17,25 +19,36 @@ public class BundleLoader : ILoader
 		BundleRes res = GetRes(bundleName);
 		if (res != null) { return res; }
 
-		res = new BundleRes(bundleName);
-		res.LoadSync();
-		res.AddRef();
-		loadedDict[bundleName] = res;
-		ResMgr.LoadedABDict[bundleName] = res;
-
-		string[] deps = DependManifest.GetAllDependencies(bundleName);
-		if (deps != null)
+		// Get deps
+		var depList = new Stack<string>();
+		GetAssetsWithDeps(bundleName, ref depList);
+		// 开始加载
+		while (depList.Count > 0)
 		{
-			for (int i = 0, iMax = deps.Length; i < iMax; i++)
+			string tmp_name = depList.Pop();
+			// 已经加载过了
+			BundleRes bundle = GetRes(tmp_name);
+			if (bundle != null) continue;
+
+			if (ResMgr.LoadedABDict.ContainsKey(tmp_name))
 			{
-				LoadSync(deps[i]);
+				BundleRes b = ResMgr.LoadedABDict[tmp_name] as BundleRes;
+				b.AddRef();
+				loadedDict[tmp_name] = b;
+				continue;
 			}
+
+			BundleRes tmp = new BundleRes(tmp_name);
+			tmp.LoadSync();
+			loadedDict[tmp_name] = tmp;
+			ResMgr.LoadedABDict[tmp_name] = tmp;
+			tmp.AddRef();
 		}
 
-		return res;
+		return GetRes(bundleName);
 	}
 
-	public void LoadAsync(string bundleName, Action<BundleRes> onLoaded)
+	public async Task LoadAsync(string bundleName, Action<BundleRes> onLoaded)
 	{
 		// 已经加载完毕
 		BundleRes res = GetRes(bundleName);
@@ -55,47 +68,43 @@ public class BundleLoader : ILoader
 			return;
 		}
 
-		Action<BundleRes> loadWrapAction = (_res) =>
-		{
-			_res.AddRef();
-			loadedDict[_res.bundleName] = _res;
-			ResMgr.LoadedABDict[_res.bundleName] = _res;
-			loadingDict.Remove(_res.bundleName);
-			ResMgr.LoadingABDict[_res.bundleName] = _res;
+		// 获取依赖
+		Stack<string> depList = new();
+		GetAssetsWithDeps(bundleName, ref depList);
 
-			res.DependList.Add(_res);
-			--res.LoadingCount;
-			if (res.State == ResState.LoadSuccess && res.LoadingCount == 0)
-			{
-				onLoaded?.Invoke(res);
-			}
-		};
-		res = new BundleRes(bundleName);
-		string[] deps = DependManifest.GetAllDependencies(bundleName);
-		if (deps != null && deps.Length > 0)
+		// 异步加载
+		while (depList.Count > 0)
 		{
-			res.LoadingCount = deps.Length;
-			for (int i = 0, iMax = deps.Length; i < iMax; i++)
+			var dep = depList.Pop();
+			BundleRes bundle = new BundleRes(dep);
+			bundle.AddLoadedEvent(() =>
 			{
-				LoadAsync(deps[i], loadWrapAction);
-			}
+
+			});
+			bundle.LoadAsync();
 		}
-		res.AddLoadedEvent(() =>
-		{
-			res.AddRef();
-			loadedDict[bundleName] = res;
-			loadingDict.Remove(bundleName);
-			ResMgr.LoadedABDict[bundleName] = res;
-			ResMgr.LoadingABDict.Remove(bundleName);
-
-			if (res.State == ResState.LoadSuccess && res.LoadingCount == 0)
-			{
-				onLoaded?.Invoke(res);
-			}
-		});
-		res.LoadAsync();
 	}
 
+	
+
+
+	/// <summary>
+	/// 获取资源与所有依赖资源列表
+	/// </summary>
+	/// --------------------------------------------
+	/// 存储顺序如下：
+	/// A   A1 (A11 A12 A13)   A2(A21 A22 (A221 A222 a223))
+	/// 加载时:
+	/// 需要从后向前加载，先加载依赖再加载本包
+	/// --------------------------------------------
+	/// <param name="bundleName"></param>
+	/// <param name="list"></param>
+	private void GetAssetsWithDeps(string bundleName, ref Stack<string> stack)
+	{
+		stack.Push(bundleName);
+		string[] deps = DependManifest.GetAllDependencies(bundleName);
+		foreach (string dep in deps) { GetAssetsWithDeps(dep, ref stack); }
+	}
 	private BundleRes GetRes(string bundleName)
 	{
 		if (loadedDict.ContainsKey(bundleName))
@@ -112,7 +121,7 @@ public class BundleLoader : ILoader
 	}
 
 	#region LoaderPool
-	private static DefaultObjectPool<BundleLoader> loaderPool = new DefaultObjectPool<BundleLoader>((_loader) =>
+	private static readonly DefaultObjectPool<BundleLoader> loaderPool = new((_loader) =>
 	{
 		foreach (var item in _loader.loadingDict) item.Value.ClearLoadedEvent();
 		foreach (var item in _loader.loadedDict) item.Value.RemoveRef();
