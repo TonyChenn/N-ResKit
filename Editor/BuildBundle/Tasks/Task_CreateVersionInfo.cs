@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
 
 /// <summary>
 /// 创建版本文件与资源清单文件
@@ -50,23 +51,23 @@ public class Task_CreateVersionInfo
 	}
 
 	// 创建版控文件
-	private static void CreateVersionFile(string md5)
+	private static void CreateVersionFile(string md5, string appleExamVersion = "")
 	{
-		VersionInfo data;
+		Version.VersionInfo data = new Version.VersionInfo();
 		if (File.Exists(VersionFile))
 		{
-			data = VersionInfoHelper.DeSerialize(VersionFile);
+			data = JsonUtility.FromJson<Version.VersionInfo>(File.ReadAllText(VersionFile));
 		}
-		else
-		{
-			data = new VersionInfo { smallVersion = 0, bigVersion = 0 };
-		}
+
 		++data.smallVersion;
+		data.appleExamVersion = appleExamVersion;
 		data.md5 = md5;
 		data.time = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-		data.SerializeAndSave(VersionFile);
 		data.cdn1 = Path_BuildBundle.CDNUrl1;
 		data.cdn2 = Path_BuildBundle.CDNUrl2;
+
+		string json = JsonUtility.ToJson(data, true);
+		File.WriteAllText(VersionFile, json);
 		AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
 		Log.GreenInfo($"版本文件创建完毕：{data.bigVersion}.{data.smallVersion} | {"" + data.appleExamVersion} | {md5} | {data.time}");
@@ -93,3 +94,4 @@ public class Task_CreateVersionInfo
 		}
 	}
 }
+

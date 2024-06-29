@@ -2,6 +2,7 @@
     "name": "N-ResKit.Editor",
     "rootNamespace": "",
     "references": [
+        "Main",
         "N-Core",
         "N-ResKit",
         "N-Core.Editor",

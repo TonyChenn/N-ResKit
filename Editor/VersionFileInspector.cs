@@ -14,12 +14,13 @@ public class VersionFileInspector : ICustomDefaultAssetInspector
 
 	public void Draw(string path)
 	{
-		VersionInfo info = VersionInfoHelper.DeSerialize(PathUtil.GetAbsolutePath(path));
-		if(info == null)
-		{
-			GUILayout.Label("版本文件已损坏！！");
-			return;
-		}
+		string abs_path = $"{Application.dataPath}/{path[6..]}";
+		var info = JsonUtility.FromJson<Version.VersionInfo>(File.ReadAllText(abs_path));
+		//if(info == null)
+		//{
+		//	GUILayout.Label("版本文件已损坏！！");
+		//	return;
+		//}
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("版本号: ", GUILayout.Width(90));
 		GUILayout.TextField($"{info.bigVersion}");
@@ -28,7 +29,7 @@ public class VersionFileInspector : ICustomDefaultAssetInspector
 
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("iOS提审版本号: ", GUILayout.Width(90));
-		GUILayout.TextField(info.appleExamVersion);
+		GUILayout.TextField(info.appleExamVersion.ToString());
 		GUILayout.EndHorizontal();
 
 		GUILayout.BeginHorizontal();
