@@ -5,9 +5,6 @@ public class ResMgr
 	// 同时最大加载数量
 	private const int MAX_LOAD_COUNT = 10;
 
-	#region ChannelItemConfig
-	#endregion
-
 	private static Dictionary<string, BaseRes> loadingABDict;
 	private static Dictionary<string, BaseRes> loadedABDict;
 	private static Dictionary<string, BaseRes> unloadABDict;
@@ -39,6 +36,11 @@ public class ResMgr
 				unloadABDict = new Dictionary<string, BaseRes>();
 			return unloadABDict;
 		}
+	}
+
+	public static void GC()
+	{
+
 	}
 
 	public static void Restart()

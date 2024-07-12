@@ -66,7 +66,7 @@ public class Task_CreateVersionInfo
 		data.cdn1 = Path_BuildBundle.CDNUrl1;
 		data.cdn2 = Path_BuildBundle.CDNUrl2;
 
-		string json = JsonUtility.ToJson(data, true);
+		string json = JsonUtility.ToJson(data, false);
 		File.WriteAllText(VersionFile, json);
 		AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 

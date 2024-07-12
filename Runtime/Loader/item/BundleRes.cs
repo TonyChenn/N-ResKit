@@ -1,13 +1,15 @@
 using NCore;
-using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class BundleRes : BaseRes
 {
+	public AssetBundleCreateRequest BundleCreateRequest{ get; private set; }
+
 	public BundleRes(string bundleName)
 	{
 		this.BundleName = bundleName;
+		State = ResState.Waiting;
 	}
 
 	public AssetBundle Bundle { get => Asset as AssetBundle; }
@@ -22,6 +24,9 @@ public class BundleRes : BaseRes
 	}
 
 
+	/// <summary>
+	/// 同步加载资源(不用管依赖)
+	/// </summary>
 	public override void LoadSync()
 	{
 		State = ResState.Loading;
@@ -30,18 +35,40 @@ public class BundleRes : BaseRes
 		State = ResState.LoadSuccess;
 	}
 
-	public override void LoadAsync()
+	/// <summary>
+	/// 异步加载资源(不用管依赖)
+	/// </summary>
+	public override async Task LoadAsync()
 	{
+		if(State == ResState.Loading && BundleCreateRequest != null)
+		{
+			await BundleCreateRequest;
+			return;
+		}
+
 		State = ResState.Loading;
 		string path = PathUtil.GetBundlePath(BundleName);
 
-		var request = AssetBundle.LoadFromFileAsync(path);
-		request.completed += (operation) =>
+		BundleCreateRequest = AssetBundle.LoadFromFileAsync(path);
+		AssetBundle bundle = await BundleCreateRequest;
+		
+		// 异步加载过程中被取消了
+		if(State == ResState.Cancel) return;
+
+		Asset = bundle;
+		State = ResState.LoadSuccess;
+
+		BundleCreateRequest = null;
+	}
+
+	public async Task<BundleRes> WaitAsync()
+	{
+		if (BundleCreateRequest != null)
 		{
-			Asset = request.assetBundle;
-			State = ResState.LoadSuccess;
-			onLoadedEvent?.Invoke();
-		};
+			await BundleCreateRequest;
+			return this;
+		}
+		return null;
 	}
 
 	protected override void OnZeroRef()

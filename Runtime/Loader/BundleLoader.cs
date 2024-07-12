@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NCore;
 using UnityEngine;
@@ -10,63 +11,67 @@ public class BundleLoader
 	private readonly Dictionary<string, BundleRes> loadedDict;
 	public BundleLoader()
 	{
-		loadingDict = new Dictionary<string, BundleRes>(8);
-		loadedDict = new Dictionary<string, BundleRes>(8);
+		loadingDict ??= new Dictionary<string, BundleRes>(8);
+		loadedDict ??= new Dictionary<string, BundleRes>(8);
 	}
 
 	public BundleRes LoadSync(string bundleName)
 	{
+		// 已经加载过了
 		BundleRes res = GetRes(bundleName);
 		if (res != null) { return res; }
 
+		// 没有加载过
 		// Get deps
 		var depList = new Stack<string>();
 		GetAssetsWithDeps(bundleName, ref depList);
 		// 开始加载
 		while (depList.Count > 0)
 		{
-			string tmp_name = depList.Pop();
+			string depName = depList.Pop();
 			// 已经加载过了
-			BundleRes bundle = GetRes(tmp_name);
+			BundleRes bundle = GetRes(depName);
 			if (bundle != null) continue;
 
-			if (ResMgr.LoadedABDict.ContainsKey(tmp_name))
+			// 当前loader正在加载
+			if (loadingDict.ContainsKey(depName))
 			{
-				BundleRes b = ResMgr.LoadedABDict[tmp_name] as BundleRes;
-				b.AddRef();
-				loadedDict[tmp_name] = b;
+				Debug.LogWarning("请避免使用同步加载 正在异步加载中 的资源！！！");
+				loadingDict[depName].BundleCreateRequest.GetAwaiter().GetResult();
+				continue;
+			}
+			// ResMgr正在加载
+			if(ResMgr.LoadingABDict.ContainsKey(depName))
+			{
+				Debug.LogWarning("请避免使用同步加载 正在异步加载中 的资源！！！");
+				BundleRes bundle1 = ResMgr.LoadingABDict[depName] as BundleRes;
+				loadingDict[depName] = res;
+
+				bundle1.BundleCreateRequest.GetAwaiter().GetResult();
+				res.AddRef();
 				continue;
 			}
 
-			BundleRes tmp = new BundleRes(tmp_name);
+			BundleRes tmp = new BundleRes(depName);
 			tmp.LoadSync();
-			loadedDict[tmp_name] = tmp;
-			ResMgr.LoadedABDict[tmp_name] = tmp;
+			loadedDict[depName] = tmp;
+			ResMgr.LoadedABDict[depName] = tmp;
 			tmp.AddRef();
 		}
 
 		return GetRes(bundleName);
 	}
 
-	public async Task LoadAsync(string bundleName, Action<BundleRes> onLoaded)
+	public async Task<BundleRes> LoadAsync(string bundleName)
 	{
 		// 已经加载完毕
-		BundleRes res = GetRes(bundleName);
-		if (res != null) { onLoaded(res); return; }
+		BundleRes res1 = GetRes(bundleName);
+		if (res1 != null) { return res1; }
 
-		// 加载中
-		if (loadingDict.ContainsKey(bundleName))
-		{
-			res.AddLoadedEvent(() => { onLoaded(res); });
-			return;
-		}
-		else if (ResMgr.LoadingABDict.ContainsKey(bundleName))
-		{
-			loadingDict[bundleName] = ResMgr.LoadingABDict[bundleName] as BundleRes;
-			loadingDict[bundleName].AddRef();
-			res.AddLoadedEvent(() => { onLoaded(res); });
-			return;
-		}
+		// 正在加载中
+		BundleRes res2 = await GetResAsync(bundleName);
+		if (res2 != null) { return res1; }
+
 
 		// 获取依赖
 		Stack<string> depList = new();
@@ -75,17 +80,51 @@ public class BundleLoader
 		// 异步加载
 		while (depList.Count > 0)
 		{
-			var dep = depList.Pop();
-			BundleRes bundle = new BundleRes(dep);
-			bundle.AddLoadedEvent(() =>
-			{
+			var depName = depList.Pop();
+			// 已经加载过了
+			BundleRes bundle1 = GetRes(depName);
+			if (bundle1 != null) continue;
 
-			});
-			bundle.LoadAsync();
+			// 当前loader正在异步加载
+			if (loadingDict.ContainsKey(depName))
+			{
+				await loadingDict[depName].WaitAsync();
+				continue;
+			}
+			// ResMgr正在异步加载
+			if(ResMgr.LoadingABDict.ContainsKey(depName))
+			{
+				BundleRes res = ResMgr.LoadingABDict[depName] as BundleRes;
+				loadingDict[depName] = res;
+
+				res.AddRef();
+				await res.WaitAsync();
+				continue;
+			}
+
+			// 开始异步加载
+			BundleRes bundle2 = new BundleRes(depName);
+			ResMgr.LoadingABDict[depName] = bundle2;
+			loadingDict[depName] = bundle2;
+			
+			await bundle2.LoadAsync();
+
+			if (bundle2.State == ResState.Cancel)
+			{
+				if (bundle2.RefCount == 0)
+				{
+				}
+			}
+
+			loadedDict[depName] = bundle2;
+			ResMgr.LoadedABDict[depName] = bundle2;
+			loadingDict[depName] = null;
+			ResMgr.LoadingABDict[depName] = null;
 		}
+		return GetRes(bundleName);
 	}
 
-	
+
 
 
 	/// <summary>
@@ -103,8 +142,11 @@ public class BundleLoader
 	{
 		stack.Push(bundleName);
 		string[] deps = DependManifest.GetAllDependencies(bundleName);
+		if (deps == null || deps.Length == 0) return;
+
 		foreach (string dep in deps) { GetAssetsWithDeps(dep, ref stack); }
 	}
+	
 	private BundleRes GetRes(string bundleName)
 	{
 		if (loadedDict.ContainsKey(bundleName))
@@ -120,10 +162,28 @@ public class BundleLoader
 		return null;
 	}
 
+	private async Task<BundleRes> GetResAsync(string bundleName)
+	{
+		if (loadingDict.ContainsKey(bundleName) && loadingDict[bundleName].State == ResState.Loading)
+		{
+			BundleRes result = await loadingDict[bundleName].WaitAsync();
+			return result;
+		}
+		else if (ResMgr.LoadingABDict.ContainsKey(bundleName)
+				&& ResMgr.LoadingABDict[bundleName].State == ResState.Loading)
+		{
+			BundleRes result = await loadingDict[bundleName].WaitAsync();
+			loadingDict[bundleName].AddRef();
+
+			return result;
+		}
+		return null;
+	}
+
 	#region LoaderPool
 	private static readonly DefaultObjectPool<BundleLoader> loaderPool = new((_loader) =>
 	{
-		foreach (var item in _loader.loadingDict) item.Value.ClearLoadedEvent();
+		foreach (var item in _loader.loadingDict) item.Value.RemoveRef();
 		foreach (var item in _loader.loadedDict) item.Value.RemoveRef();
 
 		_loader.loadingDict.Clear();
