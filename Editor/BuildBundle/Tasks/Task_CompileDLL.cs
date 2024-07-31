@@ -53,8 +53,9 @@ public static class Task_CompileDLL
 		string hotfixDllDir = SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target);
 		foreach (var dll in SettingsUtil.HotUpdateAssemblyFilesIncludePreserved)
 		{
+			string dllName = dll[..dll.LastIndexOf(".")];
 			string dllSrcPath = Path.Combine(hotfixDllDir, dll);
-			string dllDestPath = $"{outputDir}/{dll[..dll.LastIndexOf(".")]}.bytes";
+			string dllDestPath = $"{outputDir}/{dllName}.dll.bytes";
 			if (File.Exists(dllSrcPath))
 			{
 				File.Copy(dllSrcPath, dllDestPath, true);
@@ -64,6 +65,19 @@ public static class Task_CompileDLL
 				Log.Error($"热更程序集不存在：{dllSrcPath}");
 				failList.Add(dllSrcPath);
 			}
+#if GAME_DEBUG || true
+			string pdbSrcPath = Path.Combine(hotfixDllDir, dllName + ".pdb");
+			string pdbDestPath = $"{outputDir}/{dllName}.pdb.bytes";
+			if (File.Exists(pdbSrcPath))
+			{
+				File.Copy(pdbSrcPath, pdbDestPath, true);
+			}
+			else
+			{
+				Log.Error($"热更程序集pdb不存在：{pdbSrcPath}");
+				failList.Add(pdbSrcPath);
+			}
+#endif
 		}
 	}
 
